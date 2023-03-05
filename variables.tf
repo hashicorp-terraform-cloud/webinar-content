@@ -8,10 +8,14 @@ variable "github_organisation" {
   description = "The GitHub Organisation within which we'll be working"
 }
 
-
 variable "tfc_api_token" {
   type        = string
   description = "The TFC API Token"
+}
+
+variable "teams_notification_urls" {
+  type = map 
+  description = "The collection of Teams notification URLs"
 }
 
 variable "tfc_organisation" {

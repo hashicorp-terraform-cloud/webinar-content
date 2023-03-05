@@ -53,8 +53,9 @@ resource "tfe_workspace" "he-webinar-workspace" {
   name           = each.key
   organization   = data.tfe_organization.tfc.name
   project_id     = tfe_project.webinar.id
-  tag_names      = [each.value.vcs_branch, each.value.target_resource_group]
+  tag_names      = [each.value.vcs_branch]
   queue_all_runs = false
+  assessments_enabled = true
 
   vcs_repo {
     identifier     = each.value.vcs_repo
@@ -77,4 +78,15 @@ resource "tfe_variable" "rg_name" {
   value        = lookup(var.workspace_configuration_data, each.key).target_resource_group
   category     = "terraform"
   workspace_id = each.value.id
+}
+
+resource "tfe_notification_configuration" "teams" {
+  for_each =  tfe_workspace.he-webinar-workspace
+
+  name             = "Microsoft Teams Notification for ${each.key}"
+  enabled          = true
+  destination_type = "microsoft-teams"
+  triggers         = ["run:created", "run:planning", "run:needs_attention", "run:applying", "run:completed", "run:errored", "assessment:drifted", "assessment:failed" ]
+  workspace_id     = each.value.id
+  url              = lookup(var.workspace_configuration_data, each.key).teams_notification_url
 }

@@ -27,6 +27,7 @@ variable "tfc_azure_run_client_id" {
 variable "workspace_configuration_data" {
   type = map(object({
     target_resource_group = string
+    teams_notification_url = string
     vcs_repo   = string
     vcs_branch  = string
   })) 

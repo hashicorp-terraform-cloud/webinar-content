@@ -31,9 +31,20 @@ resource "github_repository" "compute" {
   }
 }
 
+data "github_branch" "infra" {
+  repository = github_repository.infra.name
+  branch     = "main"
+}
+
+data "github_branch" "compute" {
+  repository = github_repository.compute.name
+  branch     = "main"
+}
+
 resource "github_branch" "infra-prod" {
   repository = github_repository.infra.name
   branch     = "prod"
+  source_branch = data.github_branch.infra.branch
 }
 
 resource "github_branch" "infra-test" {
@@ -51,6 +62,7 @@ resource "github_branch" "infra-dev" {
 resource "github_branch" "compute-prod" {
   repository = github_repository.compute.name
   branch     = "prod"
+  source_branch = data.github_branch.compute.branch
 }
 
 resource "github_branch" "compute-test" {
@@ -63,4 +75,14 @@ resource "github_branch" "compute-dev" {
   repository    = github_repository.compute.name
   branch        = "dev"
   source_branch = github_branch.compute-test.branch
+}
+
+resource "github_branch_default" "infra"{
+  repository = github_repository.infra.name
+  branch     = github_branch.infra-dev.branch
+}
+
+resource "github_branch_default" "compute"{
+  repository = github_repository.compute.name
+  branch     = github_branch.compute-dev.branch
 }

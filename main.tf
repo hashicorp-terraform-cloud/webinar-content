@@ -20,34 +20,40 @@ module "tfc_configuration" {
 
   workspace_configuration_data = {
     "webinar-infra-dev" = {
-      target_resource_group = "webinar-infra-dev"
-      vcs_branch            = "dev"
-      vcs_repo              = module.github_configuration.infra-repository
+      target_resource_group  = "webinar-infra-dev"
+      teams_notification_url = var.teams_notification_urls.dev
+      vcs_branch             = "dev"
+      vcs_repo               = module.github_configuration.infra-repository
     }
     "webinar-infra-test" = {
-      target_resource_group = "webinar-infra-test"
-      vcs_branch            = "test"
-      vcs_repo              = module.github_configuration.infra-repository
+      target_resource_group  = "webinar-infra-test"
+      teams_notification_url = var.teams_notification_urls.test
+      vcs_branch             = "test"
+      vcs_repo               = module.github_configuration.infra-repository
     }
     "webinar-infra-prod" = {
-      target_resource_group = "webinar-infra-prod"
-      vcs_branch            = "prod"
-      vcs_repo              = module.github_configuration.infra-repository
+      target_resource_group  = "webinar-infra-prod"
+      teams_notification_url = var.teams_notification_urls.prod
+      vcs_branch             = "prod"
+      vcs_repo               = module.github_configuration.infra-repository
     }
     "webinar-compute-dev" = {
-      target_resource_group = "webinar-infra-dev"
-      vcs_branch            = "dev"
-      vcs_repo              = module.github_configuration.compute-repository
+      target_resource_group  = "webinar-infra-dev"
+      teams_notification_url = var.teams_notification_urls.dev
+      vcs_branch             = "dev"
+      vcs_repo               = module.github_configuration.compute-repository
     }
     "webinar-compute-test" = {
-      target_resource_group = "webinar-infra-test"
-      vcs_branch            = "test"
-      vcs_repo              = module.github_configuration.compute-repository
+      target_resource_group  = "webinar-infra-test"
+      teams_notification_url = var.teams_notification_urls.test
+      vcs_branch             = "test"
+      vcs_repo               = module.github_configuration.compute-repository
     }
     "webinar-compute-prod" = {
-      target_resource_group = "webinar-infra-prod"
-      vcs_branch            = "prod"
-      vcs_repo              = module.github_configuration.compute-repository
+      target_resource_group  = "webinar-infra-prod"
+      teams_notification_url = var.teams_notification_urls.prod
+      vcs_branch             = "prod"
+      vcs_repo               = module.github_configuration.compute-repository
     }
   }
 
