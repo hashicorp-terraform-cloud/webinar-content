@@ -20,10 +20,10 @@ resource "tfe_variable_set" "kubernetes_credentials" {
 
 resource "tfe_variable" "kube_host" {
   key             = "KUBE_HOST"
-  value           = var.arm_subscription_id
+  value           = var.kubernetes_host
   category        = "env"
   sensitive = true
-  variable_set_id = tfe_variable_set.kubernetes_credentials
+  variable_set_id = tfe_variable_set.kubernetes_credentials.id
 }
 
 resource "tfe_variable" "kube_token" {
@@ -31,7 +31,7 @@ resource "tfe_variable" "kube_token" {
   value           = var.kubernetes_sa_token
   category        = "env"
   sensitive = true
-  variable_set_id = tfe_variable_set.kubernetes_credentials
+  variable_set_id = tfe_variable_set.kubernetes_credentials.id
 }
 
 resource "tfe_variable_set" "az_dynamic_credentials" {
@@ -86,17 +86,8 @@ resource "tfe_workspace" "he-webinar-workspace" {
   }
 }
 
-data "tfe_workspace_ids" "multicloud" {
-  names        = ["webinar-multicloud"]
-  organization = var.tfc_organisation
-}
-
-locals {
-    multicloud_workspace_id = lookup(data.tfe_workspace_ids.webinar.ids, "webinar-multicloud")
-}
-
 resource "tfe_workspace_variable_set" "kubernetes_credentials" {
-  variable_set_id = tfe_variable_set.kubernetes_credentials
+  variable_set_id = tfe_variable_set.kubernetes_credentials.id
   workspace_id    = local.multicloud_workspace_id
 }
 
@@ -127,14 +118,90 @@ resource "tfe_notification_configuration" "teams" {
   url              = lookup(var.workspace_configuration_data, each.key).teams_notification_url
 }
 
-// this is bad and needs replacing with dynamic credentials
+data "tfe_workspace_ids" "multicloud" {
+  names        = ["webinar-multicloud"]
+  organization = var.tfc_organisation
+
+  depends_on = [
+    tfe_workspace.he-webinar-workspace
+  ]
+}
+
+locals {
+     multicloud_workspace_id = lookup(data.tfe_workspace_ids.webinar.ids, "webinar-multicloud")
+     compute_workspace_ids = {
+        for k,v in tfe_workspace.he-webinar-workspace : k => v if startswith(v.name, "webinar-compute")
+     }
+}
+
+resource "tfe_variable" "vm_owner" {
+  for_each =  local.compute_workspace_ids
+
+  key          = "vm_owner"
+  value        = "Ben"
+  category     = "terraform"
+  workspace_id = each.value.id
+}
+
+resource "tfe_variable" "ssh_admin_user" {
+  for_each =  local.compute_workspace_ids
+
+  key          = "ssh_admin_user"
+  value        = "rheluser"
+  category     = "terraform"
+  workspace_id = each.value.id
+}
+
+resource "tfe_variable" "vm_name_prefix" {
+  for_each =  local.compute_workspace_ids
+
+  key          = "vm_name_prefix"
+  value        = "webinar"
+  category     = "terraform"
+  workspace_id = each.value.id
+}
+
+resource "tfe_variable" "vm_instance_count" {
+  for_each =  local.compute_workspace_ids
+
+  key          = "vm_instance_count"
+  value        = "1"
+  category     = "terraform"
+  workspace_id = each.value.id
+}
+
+resource "tfe_workspace_variable_set" "ssh_admin_user_public_key" {
+  for_each =  local.compute_workspace_ids
+
+  variable_set_id = data.tfe_variable_set.ssh_admin_user_public_key.id
+  workspace_id    = each.value.id
+}
+
+// this is bad and needs replacing with dynamic credentials and generated keys
 data "tfe_variable_set" "aws_credentials" {
   name         = "AWS Credentials"
   organization = var.tfc_organisation
 }
 
+data "tfe_variable_set" "ssh_admin_user_public_key" {
+  name         = "SSH Public Key"
+  organization = var.tfc_organisation
+}
+
 resource "tfe_workspace_variable_set" "aws_credentials" {
-  variable_set_id = data.tfe_variable_set.aws_credentials
+  variable_set_id = data.tfe_variable_set.aws_credentials.id
+  workspace_id    = local.multicloud_workspace_id
+}
+
+resource "tfe_variable" "multicloud_ssh_admin_user" {
+  key          = "ssh_admin_user"
+  value        = "rheluser"
+  category     = "terraform"
+  workspace_id = local.multicloud_workspace_id
+}
+
+resource "tfe_workspace_variable_set" "multicloud_ssh_admin_user_public_key" {
+  variable_set_id = data.tfe_variable_set.ssh_admin_user_public_key.id
   workspace_id    = local.multicloud_workspace_id
 }
 // end raining badness

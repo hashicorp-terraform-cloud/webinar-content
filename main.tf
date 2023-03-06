@@ -58,7 +58,7 @@ module "tfc_configuration" {
       vcs_repo               = module.github_configuration.compute-repository
     }
     "webinar-multicloud" = {
-      target_resource_group  = "webinar-multicloud"
+      target_resource_group  = "webinar-infra-dev"
       teams_notification_url = var.teams_notification_urls.multicloud
       vcs_branch             = "main"
       vcs_repo               = module.github_configuration.multicloud-repository
