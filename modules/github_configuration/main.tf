@@ -79,10 +79,10 @@ resource "github_branch" "compute-dev" {
 
 resource "github_branch_default" "infra"{
   repository = github_repository.infra.name
-  branch     = github_branch.infra-dev.branch
+  branch     = github_branch.infra-prod.branch
 }
 
 resource "github_branch_default" "compute"{
   repository = github_repository.compute.name
-  branch     = github_branch.compute-dev.branch
+  branch     = github_branch.compute-prod.branch
 }
