@@ -47,5 +47,9 @@ locals {
      compute_workspace_ids = {
         for k,v in tfe_workspace.he-webinar-workspace : k => v if startswith(v.name, "webinar-compute")
      }
+     infra_workspace_ids = {
+        for k,v in tfe_workspace.he-webinar-workspace : k => v if startswith(v.name, "webinar-infra")
+     }
+     journey_workspace_ids = merge(local.compute_workspace_ids,local.infra_workspace_ids)
 }
 

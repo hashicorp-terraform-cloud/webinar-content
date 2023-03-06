@@ -69,7 +69,7 @@ resource "tfe_workspace_variable_set" "az_dynamic_credentials" {
 }
 
 resource "tfe_variable" "rg_name" {
-  for_each =  tfe_workspace.he-webinar-workspace
+  for_each =  local.journey_workspace_ids
 
   key          = "rg_name"
   value        = lookup(var.workspace_configuration_data, each.key).target_resource_group
