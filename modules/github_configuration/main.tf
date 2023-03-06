@@ -9,7 +9,7 @@ terraform {
 
 resource "github_repository" "infra" {
   name        = "he-webinar-infra"
-  description = "Cloned repository to use for HE Webinar"
+  description = "Azure Infrastructure Resources for Demonstrations"
 
   visibility = "public"
 
@@ -21,13 +21,37 @@ resource "github_repository" "infra" {
 
 resource "github_repository" "compute" {
   name        = "he-webinar-compute"
-  description = "Cloned repository to use for HE Webinar"
+  description = "Azure Compute Resources for Demonstrations"
 
   visibility = "public"
 
   template {
     owner      = "hashicorp-terraform-cloud"
     repository = "azure-compute"
+  }
+}
+
+resource "github_repository" "sentinel" {
+  name        = "he-webinar-sentinel"
+  description = "Sentinel Policies for Azure Resources"
+
+  visibility = "public"
+
+  template {
+    owner      = "hashicorp-terraform-cloud"
+    repository = "azure-sentinel-policies"
+  }
+}
+
+resource "github_repository" "multicloud" {
+  name        = "he-webinar-multicloud"
+  description = "Multicloud Resources Example with Several Providers"
+
+  visibility = "public"
+
+  template {
+    owner      = "hashicorp-terraform-cloud"
+    repository = "multicloud-infrastructure-stack"
   }
 }
 

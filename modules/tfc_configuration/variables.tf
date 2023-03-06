@@ -24,6 +24,11 @@ variable "tfc_azure_run_client_id" {
   description = "The Client ID of the Azure AD Application which we'll trust for Dynamic Credentials"
 }
 
+variable "sentinel_policy_repository" {
+  type = string
+  description = "The collection of Sentinel Policies for use with the demo"
+}
+
 variable "workspace_configuration_data" {
   type = map(object({
     target_resource_group = string
@@ -31,4 +36,14 @@ variable "workspace_configuration_data" {
     vcs_repo   = string
     vcs_branch  = string
   })) 
+}
+
+variable "kubernetes_sa_token" {
+  type = string
+  description = "Kubernetes Service Account token used when showing multicloud content"
+}
+
+variable "kubernetes_host" {
+  type = string
+  description = "Kubernetes Host used when showing multicloud content"
 }

@@ -14,7 +14,7 @@ variable "tfc_api_token" {
 }
 
 variable "teams_notification_urls" {
-  type = map 
+  type        = map(any)
   description = "The collection of Teams notification URLs"
 }
 
@@ -34,4 +34,16 @@ variable "azure_federated_credentials" {
     tfc_workspace = string
     tfc_project   = string
   }))
+}
+
+variable "kubernetes_sa_token" {
+  type        = string
+  description = "Kubernetes Service Account token used when showing multicloud content"
+  default     = ""
+}
+
+variable "kubernetes_host" {
+  type        = string
+  description = "Kubernetes Host used when showing multicloud content"
+  default     = ""
 }

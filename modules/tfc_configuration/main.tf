@@ -12,6 +12,28 @@ data "tfe_oauth_client" "github-client" {
   service_provider = "github"
 }
 
+resource "tfe_variable_set" "kubernetes_credentials" {
+  name         = "Kubernetes Credential for HE Webinar"
+  description  = "Kubernetes Credentials for HE Webinar"
+  organization = data.tfe_organization.tfc.name
+}
+
+resource "tfe_variable" "kube_host" {
+  key             = "KUBE_HOST"
+  value           = var.arm_subscription_id
+  category        = "env"
+  sensitive = true
+  variable_set_id = tfe_variable_set.kubernetes_credentials
+}
+
+resource "tfe_variable" "kube_token" {
+  key             = "KUBE_TOKEN"
+  value           = var.kubernetes_sa_token
+  category        = "env"
+  sensitive = true
+  variable_set_id = tfe_variable_set.kubernetes_credentials
+}
+
 resource "tfe_variable_set" "az_dynamic_credentials" {
   name         = "Azure Credentials for HE Webinar"
   description  = "Azure Dynamic Credentials for HE Webinar"
@@ -64,6 +86,20 @@ resource "tfe_workspace" "he-webinar-workspace" {
   }
 }
 
+data "tfe_workspace_ids" "multicloud" {
+  names        = ["webinar-multicloud"]
+  organization = var.tfc_organisation
+}
+
+locals {
+    multicloud_workspace_id = lookup(data.tfe_workspace_ids.webinar.ids, "webinar-multicloud")
+}
+
+resource "tfe_workspace_variable_set" "kubernetes_credentials" {
+  variable_set_id = tfe_variable_set.kubernetes_credentials
+  workspace_id    = local.multicloud_workspace_id
+}
+
 resource "tfe_workspace_variable_set" "az_dynamic_credentials" {
   for_each = tfe_workspace.he-webinar-workspace
 
@@ -90,3 +126,15 @@ resource "tfe_notification_configuration" "teams" {
   workspace_id     = each.value.id
   url              = lookup(var.workspace_configuration_data, each.key).teams_notification_url
 }
+
+// this is bad and needs replacing with dynamic credentials
+data "tfe_variable_set" "aws_credentials" {
+  name         = "AWS Credentials"
+  organization = var.tfc_organisation
+}
+
+resource "tfe_workspace_variable_set" "aws_credentials" {
+  variable_set_id = data.tfe_variable_set.aws_credentials
+  workspace_id    = local.multicloud_workspace_id
+}
+// end raining badness
