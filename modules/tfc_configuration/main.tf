@@ -128,7 +128,9 @@ data "tfe_workspace_ids" "multicloud" {
 }
 
 locals {
-     multicloud_workspace_id = lookup(data.tfe_workspace_ids.webinar.ids, "webinar-multicloud")
+      multicloud_workspace_id = flatten({
+        for k,v in tfe_workspace.he-webinar-workspace : k => v if startswith(v.name, "webinar-multicloud")
+     })
      compute_workspace_ids = {
         for k,v in tfe_workspace.he-webinar-workspace : k => v if startswith(v.name, "webinar-compute")
      }
@@ -189,19 +191,27 @@ data "tfe_variable_set" "ssh_admin_user_public_key" {
 }
 
 resource "tfe_workspace_variable_set" "aws_credentials" {
+  for_each =  local.multicloud_workspace_id
+
   variable_set_id = data.tfe_variable_set.aws_credentials.id
-  workspace_id    = local.multicloud_workspace_id
+  
+  workspace_id    = each.value.id
 }
 
 resource "tfe_variable" "multicloud_ssh_admin_user" {
+  for_each =  local.multicloud_workspace_id
+
   key          = "ssh_admin_user"
   value        = "rheluser"
   category     = "terraform"
-  workspace_id = local.multicloud_workspace_id
+  workspace_id    = each.value.id
 }
 
 resource "tfe_workspace_variable_set" "multicloud_ssh_admin_user_public_key" {
+  for_each =  local.multicloud_workspace_id
+
   variable_set_id = data.tfe_variable_set.ssh_admin_user_public_key.id
-  workspace_id    = local.multicloud_workspace_id
+  
+  workspace_id    = each.value.id
 }
 // end raining badness
