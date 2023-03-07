@@ -3,7 +3,7 @@ resource "tfe_policy_set" "azure-policies" {
   description   = "A set of policies to apply to Azure resources"
   organization  = var.tfc_organisation
   kind          = "sentinel"
-  workspace_ids = [ for workspace in local.journey_workspace_ids: workspace.id]
+  workspace_ids = [ for workspace in tfe_workspace.he-webinar-workspace: workspace.id]
 
   vcs_repo {
     identifier         = var.sentinel_policy_repository
