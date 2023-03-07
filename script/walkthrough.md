@@ -1,6 +1,19 @@
 # Webinar Walkthrough
 
-## Preload Tabs
+## Prep
+
+### Queue Runs
+
+* `webinar-infra-dev`
+* `webinar-infra-test`
+* `webinar-infra-prod`
+
+### Ensure Drift
+
+* `azure-infra`
+
+
+### Preload Tabs
 * Terraform Cloud - `Choose Organiation`
 * Azure Portal - Resource Groups - Filter for `webinar`
 * AWS Console - `eu-west-2`
@@ -176,15 +189,52 @@ Applying these changes can only be done when we actually Merge this Pull Request
 Let me just do that. So then we can see, just like in `dev` the Policy Check completes succesfully.
 
 * Confirm and Apply
+* Azure Portal
+* Look at `webinar-infra*` Resource Groups for Tags
+
+That concludes our look at source control integration features in the Terraform platform. I think it's really important to highlight the different ways we can leverage the platform's integration with source control - so often when we go and talk to customers the conversation starts "we've built out this scaffolding and glue code around Terraform OSS. It works, but maintaining it is time consuming and expensive'. Here we've seen how we can get up and running quickly and easily, with no scaffolding required.
 
 ### 2500 Providers
 
+Moving on...
+
+One of the things talked about during the presentation is that Terraform supports over 2,500 providers. That's a lot of supported infrastructure backends to deal with, and it can be overwhelming to know where to start, and what providers are recommended for use within your environment. And that's before you get into the realms of Terraform Modules that act as a wrapper around reusable Terraform configurations and how those can be consumed
+
+This is where the Terraform Platform's Private Module Registry comes in handy.
+
 * Organisation
 * Private Module Registry
+* Providers
 
-Pizza
+One of the basic features is just to act as a source of truth for those recommended providers - making supporting documentation and examples available from a central location. As you can see, I've decided that my organisation is going to encourage the use of a couple of Azure Providers, the AWS Provider, and the Kubernetes Provider. The other Provider, whilst not necessarily on the critical path for infrastructure managamenet, is no less important - it shows how I can order a Pizza using Terraform.
 
-<blurb>
+* Modules
+
+With regards to Modules, as much as I'd like it to be the case not everyone needs or wants to be is a Terraform rockstar. The use of the Private Module Registry allows us to create a producer-consumer model around Modules specific to an organisation. This gives us the ability to create either low code, or no code workflows within the Terraform platform.
+
+Let's just have a quick look at one of the modules I've published here, which is a module I've created to create a number of Red Hat Enterprise Linux instances in Azure: 
+
+* rhel-standard
+
+As as you can see from this overview we can see some of the details of the module such as this absolutely stellar Readme Document, the version history, and the Git repository the module is sourced from. 
+
+* Inputs
+
+We can see the inputs required when consuming the module
+
+* Outputs
+
+and the Outputs we expect to see after it has run
+
+* Resources
+
+and crucially the types of resources it'll create. 
+
+On the righthand side we can see exactly how we can use the Module, and some metrics about the current module utilisation.
+
+As I step forward through the demo, I'll be using this module here to define and create my compute resources.
+
+So let's do that.
 
 ### Integrated Cost Estimation
 
