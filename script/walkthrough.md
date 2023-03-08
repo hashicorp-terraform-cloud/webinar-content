@@ -33,7 +33,11 @@ Thirdly, we'll look at how we can derive cost estimations from Terraform runs, i
 
 Finally, we'll look at using the HashiCorp Sentinel Policy as Code framework to put guardrails around what runs can and cannot affect within your infrastructure. This will show how Sentinel can be used to enforce infrastructure standards, and enforce spending limits using cost estimation data.
 
+Just a quick point for clarity - as I run through the demo, you'll hear me referring to an `enterprise Terraform Platform`, or `the Terraform Platform`. By this I mean either `Terraform Cloud`, which is hosted by us, or `Terraform Enterprise`, which would be hosted and managed by you. There is feature parity between the offerings, which is why I'm not really going to be distinguishing them during today's session.
+
 ## Demo
+
+Let's get started.
 
 * Be logged in to avoid MFA nonsense
 
@@ -49,15 +53,36 @@ We can also see that an organisation contains Projects and Workspaces.
 
 Projects let you organise your workspaces and scope access to workspace resources, whilst the workspace itself represents a collection of infrastructure components; configuration state, data, and variables.
 
-### Version Control System Integration
+### Source Control Integration
 
-So let's have a look at bringing a project into the enterprise Terrafrom platform.
+So let's have a look at bringing a Terraform project into the enterprise Terrafrom platform.
 
-Now, we can create a workspace in the UI. Workspaces can have a Version control workflow, a CLI workflow, or an API workflow.
+Now, we can create a workspace in the UI:
 
-The most common of these is the Version Control workflow, and that's what we'll do here.
+* New
+* Workspace
+* Create New Workspace called `aws-infra` in Project `AWS Infra`
 
-* Create New Workspace called `aws-infra` from `aws-infra` repository in Github.
+And we are then presented with a choice of Workflow for our workspace. 
+
+* CLI
+
+Workspaces can have a CLI workflow which defaults to using the Terraform platform as a remote execution environment with state management.
+
+* Version control
+
+A Version control workflow, which gives us a close integration with a source control repository, enabling the Terraform platform to react to events occuring within source control, such as commits or merges.
+
+* API
+
+Or an API workflow, which is ideal for integrating the Terraform platform with a wider infrastructure ecosystem - for example, CICD tooling, or ITSM tools.
+
+However, the most common of these is the Version Control workflow, and that's what I'll be showing here. As you can see, the Terraform platform supports a number of source control providers, including enterprise or on-premise variants where applicable.
+
+* Connect to Version Control
+* GitHub
+
+I'll select my `aws-infra` repository here.
 
 Terraform Cloud is going to parse the configuration it finds in source control, and let me know what variables I need to provide out of the box. It shows us that we need to provide an Instance Name, and an SSH Key in order to access the instance. I'm going to leave the SSH key for now, but let's give our instance a name:
 
@@ -68,13 +93,13 @@ instance_name  =  webinar-feb-23
 * Save Variables
 * Workspace Overview
 
-Now we need to sort out that SSH Key. To do this, I'm going to use a Variable Set. You can think of Variable Sets as logical groupings of Variables that you may wish to manage outside the lifecycle of a Workspace. For example, common tags on resources, credentials or keys that should be applied to multiple workspaces.
+Now we need to sort out that SSH Key, and of course some credentials to allow the Terraform platform to talk to AWS. To do this, I'm going to use a Variable Set. 
+
+You can think of Variable Sets as logical groupings of Variables that you may wish to manage outside the lifecycle of a Workspace. For example, common tags on resources, credentials or keys that could be applied to multiple workspaces.
 
 * Assign Variable Sets - AWS Credentials, SSH Public Key
 
 * Plan & Apply
-
-You can see from the structured output that Teraform is provisioning the resources in AWS. You can clearly see that it's creating the instance, the SSH key, and a security group for the instance.
 
 Whilst we wait for that to finish, let's have a quick look at some of the elements in the Workspace View here.
 
@@ -87,6 +112,8 @@ Whilst we wait for that to finish, let's have a quick look at some of the elemen
 `States` just gives me a view on the current state file, such as it is.
 
 `Variables` allos me to manage what Variables are available to the workspace - whether created on a per workspace basis, or applied from a Variable Set.
+
+Let's jump back to the Run. You can see from the structured output that Teraform is provisioning the resources in AWS. You can clearly see that it's creating the instance, the SSH key, and a security group for the instance.
 
 I'll just pop open the AWS console and we can see how that EC2 instance is coming along.
 
@@ -110,9 +137,9 @@ If we have a look in the Settings for a Workspace, you'll see a `Team Access` op
 * Add Teams and Permissions
 * Select Admin Team
 
-Using this, we can drill into the finer details of how we can assign some of the default roles that exist within the platform, and how we can enable more fine grained customisation of those.
+Using this, we can drill into the finer details of how we can assign some of the default roles that exist within the platform, and how we can enable more fine grained customisation of those. This means we can configure our workspaces in such a way as to allow say, the `dev` team to own and manage changes in `dev` and `test`, but Terraform runs in `prod` might require an extra level of approval from the `admin` team, for example.
 
-And this is something you can also do at the Project level, although at the time of this talk Projects have only been Generally Available for a few weeks and will continue to evolve as time goes on. But hopefully you can see how you might start to create a comprehensive permissions model around who can access the Projects and Workspaces managed by Terraform here.
+Working with Teams and Permissions is also something you can do at the Project level, although at the time of this talk, Projects have only been Generally Available for a few weeks and will continue to evolve as time goes on. But hopefully you can see how you might start to create a comprehensive permissions model around who can access and influence the Projects and Workspaces managed by Terraform here.
 
 ## Environment Promotion
 
@@ -186,19 +213,27 @@ I cannot stress enough that as this is only a Speculative Plan, it can never be 
 
 Applying these changes can only be done when we actually Merge this Pull Request into the `test` branch. 
 
-Let me just do that. So then we can see, just like in `dev` the Policy Check completes succesfully.
+Let me just do that. 
 
+* GitHub
+* `hashicorp-terraform-cloud/he-webinar-infra`
+* Pull Requests
+* Merge
+* Terraform Cloud
 * Confirm and Apply
+
+So now, when this run completes we can see that just like in `dev` the Policy Check completes succesfully and the tags are updated on my Azure Resource Groups.
+
 * Azure Portal
 * Look at `webinar-infra*` Resource Groups for Tags
 
 That concludes our look at source control integration features in the Terraform platform. I think it's really important to highlight the different ways we can leverage the platform's integration with source control - so often when we go and talk to customers the conversation starts "we've built out this scaffolding and glue code around Terraform OSS. It works, but maintaining it is time consuming and expensive'. Here we've seen how we can get up and running quickly and easily, with no scaffolding required.
 
-### 2500 Providers
+### Terraform Providers
 
 Moving on...
 
-One of the things talked about during the presentation is that Terraform supports over 2,500 providers. That's a lot of supported infrastructure backends to deal with, and it can be overwhelming to know where to start, and what providers are recommended for use within your environment. And that's before you get into the realms of Terraform Modules that act as a wrapper around reusable Terraform configurations and how those can be consumed
+One of the things talked about during the presentation is that Terraform supports over 2,500 providers. That's a lot of supported infrastructure backends to deal with, and it can be overwhelming to know where to start, and what providers are recommended for use within your environment. And that's before you get into the realms of Terraform Modules that act as a wrapper around reusable Terraform configurations and making sure that those can be consumed safely and securely within your organisation.
 
 This is where the Terraform Platform's Private Module Registry comes in handy.
 
@@ -206,7 +241,7 @@ This is where the Terraform Platform's Private Module Registry comes in handy.
 * Private Module Registry
 * Providers
 
-One of the basic features is just to act as a source of truth for those recommended providers - making supporting documentation and examples available from a central location. As you can see, I've decided that my organisation is going to encourage the use of a couple of Azure Providers, the AWS Provider, and the Kubernetes Provider. The other Provider, whilst not necessarily on the critical path for infrastructure managamenet, is no less important - it shows how I can order a Pizza using Terraform.
+One of the basic features is just to act as a source of truth for for those recommended providers - making supporting documentation and examples available from a central location. As you can see, I've decided that my organisation is going to encourage the use of a couple of Azure Providers, the AWS Provider, and the Kubernetes Provider. The other Provider, whilst not necessarily on the critical path for infrastructure managamenet, is no less important - it shows how I can order a Pizza using Terraform.
 
 * Modules
 
@@ -238,23 +273,27 @@ So let's do that.
 
 ### Integrated Cost Estimation
 
-None of the resources we've deployed so far have had a significant cost associated with them.
+None of the resources we've deployed so far have had a significant cost associated with them. The Terraform platform provides cost estimates for many resources found in your Terraform configurations. For each resource that it can provide an estimate for, an hourly and monthly cost is shown, along with the monthly delta.
+
+Let's create some resources.
 
 * `webinar-infra-compute`
 
-Let's change that.
-
 * Actions -> Start New Run
 
-Thinking back to our composable infrastructure, what this is going to do is create a compute resource, with a cost associated with it, in the Resource Group managed by the `webinar-infra-dev` Workspace. All we're doing here is consuming that Resource Group that has already been created.
+Thinking back to our composable infrastructure, what this is going to do is create a compute resource, with a cost associated with it, in the Resource Group managed by the `webinar-infra-dev` Workspace. All we're doing here is consuming a Resource Group that has already been created, in a reusable Module that defines my compute resources for me.
 
 * Look at `Estimated Cost Increase`
 * Open `Cost Estimation Finished` tab
 * Confirm and Apply
 
-It's worth noting that the pricing shown in our SaaS offering - the one I'm working with here - will only show estimations based on the publically published list prices for resources in the cloud environment at the moment the infrastructure changes get applied. If the price tomorrow is less than it is today, then tomorow's runs will show tomorrow's pricing. If you have a commercial deal with one of the supported infrastructure providers - say, a 40% discount on cloud spend across the board - that would not be reflected in this particular picing metric. However, it is possible to write policies that take the particulars of your commercial terms into account. If you know you have a 40% discount across the board, then you can write a policy that takes the list price, calculates 40% of that, and measures the run cost deltas based on the resulting price.
+Here we can see the cost impact of our Infrastructure change. It's worth noting that the platform will only show estimations based on the publically published list prices for resources in the cloud environment at the moment the infrastructure changes get planned. If the price tomorrow is less than it is today, then tomorow's runs will show tomorrow's cheaper pricing. 
 
-In any case, they're a good indication of value of your relative spends on particular infrastructure changes.
+If you have a commercial deal with one of the supported infrastructure providers - say, a 40% discount on cloud spend across the board - that would not be reflected in this particular picing metric. 
+
+However, it is possible to write policies that take the particulars of your commercial terms into account. If you know you have that 40% discount across the board, then you can write a policy that takes the list price, calculates 40% of that, and measures the run cost deltas based on the resulting price.
+
+In any case, the cost estimates are a good indication of value of your relative spends on particular infrastructure changes.
 
 ### Risk Reduction through Policy As Code
 
@@ -290,6 +329,9 @@ When a Policy is Advisory - Like my earlier tags Policy - it is allowed to fail.
 Soft Mandatory means that the Policy must pass unless it is explicitly overidden. The purpose of Soft Mandatory level is to provide a level of privilege separation for the behavior being governed by the Policy. Additionally, that override provides non-repudiation since at least the user was explicitly overriding a failed policy.
 
 Hard Mandatory means that the policy must pass, without exception or override. The only way to override a hard mandatory policy is to explicitly remove the policy. It should be used in situations where the ability to override is neither warranted nor desirable.
+
+* Structured Output
+* Expand Policy Checks finished
 
 If I look at Policy Check Passed section of the Structured Output, I can see that in addition to my Resource Group tags policy, I have a Policy called `enforce-cost-limits`. Because I wrote this policy, I know that it enforces a limit on cost deltas per run of $100. My previous run passed because it was `$ESTIMATED COST`.
 
@@ -332,23 +374,14 @@ If I pop open this Resource Group resource, I can see that my configuration has 
 
 * Continuous Validation is a neat little feature that's currently in Beta. As some of you may be aware, the Terraform language allows for the creation of `preconiditon` and `postcondition` blocks, which can help you validate your configuration. The Continuous Validation feature lets the Terraform platform regularly check whether the preconditions and postconditions in a workspace’s configuration continue to pass, validating the real-world infrastructure for you. For example, you could have a postcondition to check whether a certificate is valid. Continuous validation would alert you when the condition fails, so you can update the certificate and avoid errors the next time you want to update your infrastructure.
 
-That's all I wanted to talk about and show for today. I'll now hand back over to Chris to wrap up.
-
 ### Handover
 
+That's all I wanted to talk about and show for today. I'll now hand back over to Chris to wrap up.
 
+### Pre-canned questions
 
+Can we really order pizza using Terraform?
 
+Typical University, lots of different siloed environments. It's always challenging to get consensus about what tools we should be using. Is there any benefit to an individual department using an enterprise terraform platform assuming we can't get wider buy-in?
 
-
-
-
-
-
-
-
-
-
-
-
-Policy Sets are just a grouping of policies that you create, and apply to one or more workspaces within your organisation. Depending on the enforcement level set on the policy - either advisory or mandatory - a failed policy can prevent the Terraform run from occuring.
+Do HashiCorp offer any kind of campus agreements that new customer can take advantage of?
