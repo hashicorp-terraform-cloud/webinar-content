@@ -30,6 +30,10 @@ The repository relies on template GH repositories in order to make this process 
 
 It also sets up Dynamic Credentials between TFC and Azure so being logged into the Azure CLI is critical.
 
+## Configuration
+
+Some of this stuff is set up, but not actively used in the demo flow - such as teams integration, or the hilariously contrived multicloud example.
+
 ```
 github_token        = 
 github_organisation = 
